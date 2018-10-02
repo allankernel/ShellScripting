@@ -1,0 +1,519 @@
+————— AWK and SED————— 
+//https://www.tutorialspoint.com/awk/awk_workflow.htm
+//https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
+———————— 
+BEGIN {awk-commands}
+/pattern/ {awk-commands} //this is body block
+END {awk-commands}
+———————— 
+Example = 
+
+#!/bin/sh
+awk 'BEGIN { printf "what a begnning\n"}
+    {print}    
+    END {printf "nice day\n"}' marks.txt 
+———————— 
+-v is for variable
+awk -v name=Jerry 'BEGIN{printf "Name = %s\n", name}' 
+awk -v name=Jerry -v id=20 'BEGIN{ printf "Name = %s and id = %d \n", name , id }'
+
+Awk —help  //for more details 
+
+—— In the body block we can use / / to specify search form . Example we are searching for Hari in the each line of the file 
+ awk ‘/Hari/ {print $0}' marks.txt
+
+$0 is whole record , $1 is first field ….etc 
+
+Below it is counter to count number of lines of marks.txt file 
+
+awk '/a/{++cnt} END { printf "total count is %d", cnt }' marks.txt
+———————— Standard AWK built in variables ———————— 
+ARGC - It implies the number of arguments provided at the command line.
+ awk 'BEGIN {print "Arguments =", ARGC}' One Two Three Four
+
+
+ARGV - This stores command line arguments 
+awk 'BEGIN { 
+   for (i = 0; i < ARGC - 1; ++i) { 
+      printf "ARGV[%d] = %s\n", i, ARGV[i] 
+   } 
+}' one two three four
+
+CONVFMT  — It represents the conversion format for numbers. Its default value is %.6g.
+ENVIRON. — It is an associative array of environment variables.
+FILENAME — It represents the current file name.
+FS — Field separator 
+NF — Number of fields in current record $0 
+example prints only those lines that contain more than two fields.
+echo -e "One Two\nOne Two Three\nOne Two Three Four" | awk 'NF > 2'
+>One Two Three
+>One Two Three Four
+NR - Number of current records . Below will print number of lines 
+echo -e "One Two\nOne Two Three\nOne Two Three Four" | awk 'END { print NR}'
+> 3
+FNR — It is similar to NR, but relative to the current file. It is useful when AWK is operating on multiple files.
+OFMT — It represents the output format number and its default value is %.6g.
+OFS — It represents the output field separator and its default value is space.
+ORS — It represents the output record separator and its default value is newline.
+RLENGTH — It represents the length of the string matched by match function. AWK's match function searches for a given string in the input-string.
+
+awk ' BEGIN { if (match("allan gonsalves", "sal")) { print RLENGTH}}'
+> 3
+RSTART - It represents the first position in the string matched by match function.
+>10 
+RS - It represents (input) record separator and its default value is newline.
+SUBSEP — It represents the separator character for array subscripts and its default value is \034.
+ARGIND — It represents the index in ARGV of the current file being processed.
+ERRNO  — A string indicates an error when a redirection fails for getline or if close call fails.
+
+awk 'BEGIN { ret = getline < "junk.txt"; if (ret == -1) print "Error:", ERRNO }'
+> Error: No such file or directory
+
+IGNORECASE — When this variable is set, GAWK becomes case-insensitive. 
+awk ' BEGIN {IGNORECASE = 1 } /amit/ ' marks.txt.  //Here /amit/ is a body block . 
+
+PROCINFO — This is an associative array containing information about the process, such as real and effective UID numbers, process ID number, and so on.
+ awk 'BEGIN { print PROCINFO["pid"] }'
+
+————————— Arithmetic Operatiors - ————————— 
+awk ' BEGIN { a = 40 ; b = 40 ; print "a+b", a+b} '
+> a+b 80
+
+————————— Assignment Operatiors - ————————— 
+Simple assignment. No data type or $ sign required for variable 
+awk ' BEGIN { var= 200 ; print "var valus is ", var} '
+> var valus is  200
+————————— Relational and Conditional Operatiors - ————————— 
+awk ' BEGIN { a= 30; b=40 ; if( a < b) print " a is bigger than b" , a, b }'
+>  a is bigger than b 30 40
+
+————————— Logical Operatiors - ————————— 
+
+awk ' BEGIN  { a = 9 ; if ( a >0 && a <10 ) print "a is valid", a }'
+> a is valid 9
+
+————————— Ternary  Operatiors - ————————— 
+awk ' BEGIN { x = 39; y = 50 ; ( x < y) ? max=y : max=x ; print "Print max value", max } '
+> Print max value 50
+
+————————— Unary  Operatiors - ————————— 
+It is represented by +. It multiplies a single operand by +1.
+awk ' BEGIN { a= 10 ; a +=1 ; print "final value of a is :" , a }'
+> final value of a is : 11
+
+————————— Exponential  Operatiors - ————————— 
+awk 'BEGIN { a = 10; a = a ^ 2; print "a =", a }'
+> a = 100
+
+————————— String concatenation  Operatiors - ————————— 
+awk 'BEGIN { str1 = "Hello, "; str2 = "World"; str3 = str1 str2; print str3 }'
+> Hello, World
+
+————————— Array Membership Operatiors - ————————— 
+awk 'BEGIN { 
+   arr[0] = 1; arr[1] = 2; arr[2] = 3; for (i in arr) printf "arr[%d] = %d\n", i, arr[i]
+}'
+> arr[0] = 1
+> arr[1] = 2
+> arr[2] = 3
+
+————————— Regular expression Operatiors - ————————— 
+MATCH — It is represented as ~. It looks for a field that contains the match string. 
+
+awk ' $0 ~ 9' marks.txt
+
+> 2)  Rahul   Maths    90
+> 5)  Hari    History  89
+
+DOT - It matches any single character except the end of line character.  This is for single character only.
+echo -e "cat\nbat\nfun\nfin\nfan" | awk '/f.n/'
+
+START OF THE LINE - It matches the start of line
+echo -e "This\nThat\nThere\nTheir\nthese" | awk '/^The/'
+
+END OF THE LINE - It matches the end of line.
+echo -e "knife\nknow\nfun\nfin\nfan\nnine" | awk '/n$/'
+
+
+MATCH CHARACTER SET - It is used to match only one out of several characters. For instance, the following example matches pattern Call and Tall but not Ball.
+echo -e "Call\nTall\nBall" | awk '/[CT]all/'
+
+GROUPING - Parentheses () are used for grouping and the character | is used for alternatives. For instance, the following regular expression matches the lines containing either Apple Juice or Apple Cake.
+
+echo -e "Apple Juice\nApple Pie\nApple Tart\nApple Cake" | awk  '/Apple (Juice|Cake)/'
+
+
+——————————  Array ——————————— 
+AWK has associative arrays and one of the best thing about it is – the indexes need not to be continuous set of number; you can use either string or number as an array index. Also, there is no need to declare the size of an array in advance – arrays can expand/shrink at runtime.
+
+array_name[index] = value
+
+awk ' BEGIN { name[teacher]= "allan" 
+              id[student] = 300 ; 
+              print "details: ", name[teacher], id[student]}'
+
+——————————  Control Flow ( IF , FOR ,  WHILE , DO-WHILE , BREAK, CONTINUE , EXIT) ——————————— 
+
+if (condition)
+   action-1
+else
+   action-2
+
+
+If ( condition) { 
+	action 1
+	action 2
+	…..
+	action n } 
+
+awk 'BEGIN {
+   num = 11; if (num % 2 == 0) printf "%d is even number.\n", num; 
+      else 
+      for (i=0; i< 4; i++) 
+      printf "%d is odd number.\n", num 
+}'
+
+while (condition)
+   action
+
+do
+   action
+while (condition)
+
+——————————  Built in functions  ——————————— 
+
+atan2(y, x) —  It returns the arctangent of (y/x) in radians
+cos(expr)  — This function returns the cosine of expr, which is expressed in radians
+int(expr) — This function truncates the expr to an integer value. 
+
+rand() - This generated random numbers.
+
+srand([expr]) — 
+
+awk ' BEGIN { p = 3.14 ; param = 39 ; print "cost function:" , cos(param * p/100)}'
+awk ' BEGIN { for(i=0; i< 3; i++) print "random number :" , rand() }' 
+
+srand([expr]) — This function generates a random number using seed value. It uses expr as the new seed for the random number generator. In the absence of expr, it uses the time of day as the seed value.
+
+awk 'BEGIN {
+   param = 10
+   
+   printf "srand() = %d\n", srand()
+   printf "srand(%d) = %d\n", param, srand(param)
+}'
+
+——————————  User defined functions  ——————————— 
+# Returns minimum number
+function find_min(num1, num2){
+   if (num1 < num2)
+   return num1
+   return num2
+}
+# Returns maximum number
+function find_max(num1, num2){
+   if (num1 > num2)
+   return num1
+   return num2
+}
+# Main function
+function main(num1, num2){
+   # Find minimum number
+   result = find_min(10, 20)
+   print "Minimum =", result
+  
+   # Find maximum number
+   result = find_max(10, 20)
+   print "Maximum =", result
+}
+# Script execution starts here
+BEGIN {
+   main(10, 20)
+}
+
+——————————  Redirect functions  ——————————— 
+print DATA > output-file
+
+awk 'BEGIN { print "Hello, World !!!" > "/tmp/message.txt" } ' | cat /tmp/message.txt 
+
+—————————— Two way communication   ——————————— 
+AWK can communicate to an external process using |&, which is two-way communication, co-exist another process.
+
+BEGIN {
+   cmd = "tr [a-z] [A-Z]"
+   print "hello, world !!!" |& cmd
+   close(cmd, "to")
+   
+   cmd |& getline out
+   print out;
+   close(cmd);
+}
+
+—output 
+HELLO, WORLD !!!
+—————————— 
+Employee.txt file as below 
+ajay manager account 45000
+sunil clerk account 25000
+varun manager sales 50000
+amit manager account 47000
+tarun peon sales 15000
+deepak clerk sales 23000
+sunil peon sales 13000
+satvik director purchase 80000 
+
+$ awk '{print}' employee.txt
+
+ajay manager account 45000
+sunil clerk account 25000
+varun manager sales 50000
+amit manager account 47000
+tarun peon sales 15000
+deepak clerk sales 23000
+sunil peon sales 13000
+satvik director purchase 80000 
+
+—————— Print the lines which matches with the given pattern.
+$ awk '/manager/ {print}' employee.txt
+
+ajay manager account 45000
+varun manager sales 50000
+amit manager account 47000 
+
+
+—————— Spliting a Line Into Fields
+$ awk '{print $1,$4}' employee.txt 
+
+ajay 45000
+sunil 25000
+varun 50000
+amit 47000
+tarun 15000
+deepak 23000
+sunil 13000
+satvik 80000
+
+—————— Use of NR built-in variables (Display Line Number)
+$ awk '{print NR,$0}' employee.txt 
+
+1 ajay manager account 45000
+2 sunil clerk account 25000
+3 varun manager sales 50000
+4 amit manager account 47000
+5 tarun peon sales 15000
+6 deepak clerk sales 23000
+7 sunil peon sales 13000
+8 satvik director purchase 80000
+
+———————— NR built-in variables (Display Line From 3 to 6)
+$ awk 'NR==2, NR==6 { print NR, $0}' employee.txt 
+
+2 sunil clerk account 25000
+3 varun manager sales 50000
+4 amit manager account 47000
+5 tarun peon sales 15000
+6 deepak clerk sales 23000
+
+
+—————— Use of NF built-in variables (Display Last Field)
+$ awk '{print $1,$NF}' employee.txt 
+
+ajay 45000
+sunil 25000
+varun 50000
+amit 47000
+tarun 15000
+deepak 23000
+sunil 13000
+satvik 80000 
+
+———————— To find the length of the longest line present in the file:
+$ awk '{ if (length($0) > max) max = length($0) } END { print max }'  employee.txt
+
+13
+
+———————— To find/check for any string in any column:
+
+$ awk '{if ($3 == "sales") print $0; } ' employee.txt
+
+varun manager sales 50000
+tarun peon sales 15000
+deepak clerk sales 23000
+sunil peon sales 13000
+
+
+————————To print the squares of first numbers from 1 to n say 6:
+$ awk 'BEGIN { for(i=1;i<=5;i++) print "square of", i, "is",i*i; }'
+
+square of 1 is 1
+square of 2 is 4
+square of 3 is 9
+square of 4 is 16
+square of 5 is 25
+square of 6 is 36
+
+—————————— 
+
+Process files for desired searching and printing requirements - 
+
+—— Print first and third parameter from /etc/passwd file 
+
+BEGIN { FS=":"; print "Username" }         //this is header block . FS is file separator 
+{ print $1, $3 }				//this is logic and printing block	
+END { print "Total Users = " NR }		//this is footer block , NR is total count 
+// BEGIN and END keywords are used only when we are writing code in the file , if using command line then not needed
+
+—— run it using  awk -f sample.awk /etc/passwd
+—— output - 
+dockerrosot 990
+mockwbuild 1001
+apache 48
+jenkins 989
+unbsound 988
+
+—— Print count of root user id  from /etc/passwd file 
+BEGIN { FS=":"; print "Username" }
+/^root/ { print $1 ; count++ }
+END { print "Total Users = " count }
+—— run it using  awk -f sample.awk /etc/passwd
+——output - 
+Username
+root 0
+Total Users = 1
+
+———— use command line to fire awk command 
+employee file 
+allan,gonsalves
+fab,gonsalves
+ri,gonsalves
+ori,gonsalves
+
+awk -F"," '{ print $1 , $2 }'  employee.txt
+
+——output — 
+allan gonsalves
+fab gonsalves
+ri gonsalves
+ori gonsalves
+—————————— Convert text to upper case —— 
+awk -F"," '{ print toupper($1) , $2 }'  employee.txt
+
+ALLAN gonsalves
+FAB gonsalves
+RI gonsalves
+ORI gonsalves
+
+————————— Scenario 2 - lastlog command parsing 
+>lastlog —this command shows who logged in the last and details of user 
+Execute below code on lastlog which is created in sample.awk file 
+
+BEGIN { printf "%8s %11s\n", "Username" , "Login date" }
+!(/Never logged in/ || /^Username/ || /^root/) { 
+  count++
+    if (NF == 8) 
+      printf "%8s %2s %3s %4s\n", $1, $5, $4, $8
+    else
+      printf "%8s %2s %3s %4s\n", $1, $6, $5, $9
+}
+END { print "-----total num of users processed : ", count }
+
+> lastlog | awk -f sample.awk 
+—output —
+Username  Login date
+     gdm 16 Aug 2018
+icpluser 10 Sep 2018
+mockbuild 22 Feb 2018
+-----total num of users processed :  3
+
+————————— Scenario 3 - Parsing file with blank lines - 
+Below is the data file virtualhost.txt - 
+
+<VirtualHost *:80>
+DocumentRPoot /www/example
+
+ServerName www.example.org
+# Other directives here 
+</VirtualHost>
+<VirtualHost *:80>
+DocumentRPoot /www/thesite.in
+ServerName www.mywsite.com
+# Other directives here 
+</VirtualHost>
+
+<VirtualHost *:80>
+DocumentRPoot /www/linuxformat
+ServerName www.linuxformat.com
+# Other directives here
+</VirtualHost>
+
+> Now lets remove blank lines using SED command first - 
+> sed -i ' /^\s*$/d;/^<\ /Virt/a \ ' vitualhost.txt       —>this will remove blank lines . ^ means begin with \s means string $ means till end /d means delete ; is for second operation <\ means string that has < , /Vir/ means match string Vir and /a means append.
+File will become below 
+<VirtualHost *:80>
+DocumentRPoot /www/example
+ServerName www.example.org
+# Other directives here 
+</VirtualHost>
+ 
+<VirtualHost *:80>
+DocumentRPoot /www/thesite.in
+ServerName www.mywsite.com
+# Other directives here 
+</VirtualHost>
+ 
+<VirtualHost *:80>
+DocumentRPoot /www/linuxformat
+ServerName www.linuxformat.com
+# Other directives here
+</VirtualHost>
+ 
+
+— Now run awk command as below to find example text
+> awk -f virtualhost.awk search=example virtualhost.conf 
+
+
+
+————— SED  —————https://www.geeksforgeeks.org/sed-command-in-unix/
+
+sed OPTIONS... [SCRIPT] [INPUTFILE...] 
+
+—————————— Sample file  
+
+unix is great os. unix is opensource. unix is free os.
+learn operating system.
+unix linux which one you choose.
+unix is easy to learn.unix is a multiuser os.Learn unix .unix is a powerful.
+
+
+———————— Scenario 1 - Replacing or substituting string : Sed command is mostly used to replace the text in a file. The below simple sed command replaces the word “unix” with “linux” in the file. 
+
+$ sed 's/unix/linux/' sample.txt 
+
+linux is great os. unix is opensource. unix is free os.
+learn operating system.
+linux linux which one you choose.
+linux is easy to learn.unix is a multiuser os.Learn unix .unix is a powerful.
+
+———————— Scenario 2 -  Replacing the nth occurrence of a pattern in a line : Use the /1, /2 etc flags to replace the first, second occurrence of a pattern in a line. The below command replaces the second occurrence of the word “unix” with “linux” in a line. 
+
+$ sed 's/unix/linux/2' geekfile.txt
+
+unix is great os. linux is opensource. unix is free os.
+learn operating system.
+unix linux which one you choose.
+unix is easy to learn.linux is a multiuser os.Learn unix .unix is a powerful.
+
+———————— Scenario 3 -  Replacing all the occurrence of the pattern in a line : The substitute flag /g (global replacement) specifies the sed command to replace all the occurrences of the string in the line. 
+
+$ sed 's/unix/linux/g' geekfile.txt
+
+
+linux is great os. linux is opensource. linux is free os.
+learn operating system.
+linux linux which one you choose.
+linux is easy to learn.linux is a multiuser os.Learn linux .linux is a powerful.
+
+
+———————— Scenario 4 - Parenthesize first character of each word : This sed example prints the first character of every word in paranthesis. 
+
+
+
